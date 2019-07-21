@@ -15,7 +15,12 @@ namespace GitSettings.Editor
         
         private void OnGUI()
         {
-            using (new EditorGUI.DisabledScope(!ExistsGit()))
+            var existsGit = ExistsGit();
+            
+            EditorGUILayout.LabelField("このプロジェクトのGit: ", existsGit ? "有効！" : "未作成...");
+            EditorGUILayout.Space();
+            
+            using (new EditorGUI.DisabledScope(!existsGit))
             {
                 DrawEditorSettingsGUI();
                 DrawJetBrainGitKeepGUI();
@@ -32,10 +37,17 @@ namespace GitSettings.Editor
 
         private void DrawEditorSettingsGUI()
         {
-            if (GUILayout.Button("Editor設定で.meta管理を有効化", GUILayout.Height(30f)))
+            var isChangedSettings = 
+                EditorSettings.externalVersionControl == ExternalVersionControl.Generic &&
+                UnityEditor.EditorSettings.serializationMode == SerializationMode.ForceText;
+            
+            using (new EditorGUI.DisabledScope(isChangedSettings))
             {
-                UnityEditor.EditorSettings.externalVersionControl = ExternalVersionControl.Generic; // "Visible Meta Files";
-                UnityEditor.EditorSettings.serializationMode = SerializationMode.ForceText;
+                if (GUILayout.Button("Editor設定で.meta管理を有効化", GUILayout.Height(30f)))
+                {
+                    UnityEditor.EditorSettings.externalVersionControl = ExternalVersionControl.Generic; // "Visible Meta Files";
+                    UnityEditor.EditorSettings.serializationMode = SerializationMode.ForceText;
+                }
             }
         }
 
