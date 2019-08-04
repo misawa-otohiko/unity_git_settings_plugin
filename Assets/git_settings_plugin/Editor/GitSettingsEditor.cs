@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace GitSettings.Editor
 {
@@ -19,11 +21,15 @@ namespace GitSettings.Editor
             
             EditorGUILayout.LabelField("このプロジェクトのGit: ", existsGit ? "有効！" : "未作成...");
             EditorGUILayout.Space();
+            EditorGUILayout.Space();
             
             using (new EditorGUI.DisabledScope(!existsGit))
             {
                 DrawEditorSettingsGUI();
+                EditorGUILayout.Space();
                 DrawJetBrainGitKeepGUI();
+                EditorGUILayout.Space();
+                DrawWriteGitIgnoreFileGUI();
             }
         }
 
@@ -53,7 +59,6 @@ namespace GitSettings.Editor
 
         private void DrawJetBrainGitKeepGUI()
         {
-            
             var rootDirectory = "Plugins/Editor";
             var rootFullDirectory = Application.dataPath + "/" + rootDirectory;
             var fileName = ".gitkeep";
@@ -75,6 +80,63 @@ namespace GitSettings.Editor
             }
         }
 
+        private void DrawWriteGitIgnoreFileGUI()
+        {
+            var rootDirectory = Path.GetDirectoryName(Application.dataPath);
+            var fileName = ".temp_gitignore";
+            var existsFile = ExistsFile(rootDirectory, fileName);
+            
+            
+            if (GUILayout.Button(".gitignoreファイルにUnity用無視リストを上書き", GUILayout.Height(30f)))
+            {
+                var text = GetText("https://raw.githubusercontent.com/github/gitignore/master/Unity.gitignore");
+                if (text == null)
+                {
+                    Debug.LogError("テキストがnull!");
+                }
+                
+                //Unity.gitignoreを上書き
+                CreateText(rootDirectory, fileName, text);
+            }
+            
+            if (!existsFile)
+            {
+                EditorGUILayout.HelpBox($"{fileName}ファイルが見つかりませんでした。", MessageType.Error);
+            }
+        }
+
+        private string GetText(string url)
+        {
+            //wwwで取得
+            using (var req = UnityWebRequest.Get(url))
+            {
+                req.SendWebRequest();
+                
+                //完了するまで待機
+                while (!req.isDone)
+                {
+                }
+
+                //ネットワークエラー
+                if (req.isNetworkError)
+                {
+                    Debug.LogError($"<NetworkError> {req.error}");
+                    return null;
+                }
+
+                //レスポンスエラー
+                if(req.responseCode != 200)
+                {
+                    Debug.LogError($"<Response Error> responseCode: {req.responseCode}");
+                    return null;
+                }
+            
+                //成功
+                return req.downloadHandler.text;
+            }
+        }
+        
+
         private void CreateEmptyText(string directory, string fileName)
         {
             //gitkeepファイル作成
@@ -85,6 +147,12 @@ namespace GitSettings.Editor
             }
         }
 
+        private void CreateText(string directory, string fileName, string contents)
+        {
+            //txtを作成して内容を書き込み(既にファイルが存在する場合は上書き)
+            File.WriteAllText(directory + "/" + fileName, contents, Encoding.Default);
+        }
+
         private void CreateDirectory(string relativeDir)
         {
             if (Directory.Exists(relativeDir))
@@ -93,6 +161,11 @@ namespace GitSettings.Editor
             }
             
             Directory.CreateDirectory(relativeDir);
+        }
+
+        private bool ExistsFile(string directory, string fileName)
+        {
+            return File.Exists(directory + "/" + fileName);
         }
     }
 }
