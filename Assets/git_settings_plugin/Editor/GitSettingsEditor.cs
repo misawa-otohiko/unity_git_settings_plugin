@@ -9,6 +9,52 @@ namespace GitSettings.Editor
 {
     public class GitSettingsEditor : EditorWindow
     {
+        /// <summary>
+        /// GitIgnoreに含めるテキスト
+        /// </summary>
+        private class CustomGitIgnore
+        {
+            /// <summary>
+            /// 含めるか
+            /// </summary>
+            public bool IsInclude;
+
+            /// <summary>
+            ///  タイトル
+            /// </summary>
+            public readonly string Title;
+            
+            /// <summary>
+            /// テキスト
+            /// </summary>
+            public readonly string IgnoreText;
+
+            public CustomGitIgnore(bool isInclude, string title, string ignoreText)
+            {
+                IsInclude = isInclude;
+                Title = title;
+                IgnoreText = ignoreText;
+            }
+        }
+
+        /// <summary>
+        /// GitIgnoreのカスタマイズ
+        /// </summary>
+        private CustomGitIgnore[] _customGitIgnore = new CustomGitIgnore[]
+        {
+            new CustomGitIgnore(true, 
+                "!.gitkeep",
+                Environment.NewLine + Environment.NewLine +
+                "# include .gitkeep" + Environment.NewLine +
+                "!.gitkeep"),
+            
+            new CustomGitIgnore(true, 
+                "JetBrainsファイル",
+                Environment.NewLine + Environment.NewLine +
+                "# JetBrains Rider" + Environment.NewLine +
+                ".idea"),
+        };
+        
         [MenuItem("Window/Git Settings")]
         private static void OpenWindow()
         {
@@ -92,11 +138,16 @@ namespace GitSettings.Editor
                 var text = GetText("https://raw.githubusercontent.com/github/gitignore/master/Unity.gitignore");
                 if (text == null)
                 {
-                    Debug.LogError("テキストがnull!");
+                    return;
                 }
                 
                 //Unity.gitignoreを上書き
                 CreateText(rootDirectory, fileName, text);
+            }
+
+            foreach (var customGitIgnore in _customGitIgnore)
+            {
+                customGitIgnore.IsInclude = EditorGUILayout.Toggle(customGitIgnore.Title, customGitIgnore.IsInclude);
             }
             
             if (!existsFile)
