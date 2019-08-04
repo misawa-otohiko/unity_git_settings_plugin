@@ -149,8 +149,9 @@ namespace GitSettings.Editor
                     }
 
                     //TextにAddしていく
-                    text += Environment.NewLine + Environment.NewLine;
+                    text += Environment.NewLine;
                     text += customGitIgnore.IgnoreText;
+                    text += Environment.NewLine;
                 }
                 
                 //Unity.gitignoreを上書き
