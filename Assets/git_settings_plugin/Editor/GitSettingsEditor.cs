@@ -44,13 +44,11 @@ namespace GitSettings.Editor
         {
             new CustomGitIgnore(true, 
                 "!.gitkeep",
-                Environment.NewLine + Environment.NewLine +
                 "# include .gitkeep" + Environment.NewLine +
                 "!.gitkeep"),
             
             new CustomGitIgnore(true, 
                 "JetBrainsファイル",
-                Environment.NewLine + Environment.NewLine +
                 "# JetBrains Rider" + Environment.NewLine +
                 ".idea"),
         };
@@ -139,6 +137,20 @@ namespace GitSettings.Editor
                 if (text == null)
                 {
                     return;
+                }
+                
+                //カスタム分追加する
+                foreach (var customGitIgnore in _customGitIgnore)
+                {
+                    //含めないものは無視
+                    if (!customGitIgnore.IsInclude)
+                    {
+                        continue;
+                    }
+
+                    //TextにAddしていく
+                    text += Environment.NewLine + Environment.NewLine;
+                    text += customGitIgnore.IgnoreText;
                 }
                 
                 //Unity.gitignoreを上書き
