@@ -127,7 +127,7 @@ namespace GitSettings.Editor
         private void DrawWriteGitIgnoreFileGUI()
         {
             var rootDirectory = Path.GetDirectoryName(Application.dataPath);
-            var fileName = ".temp_gitignore";
+            var fileName = ".gitignore";
             var existsFile = ExistsFile(rootDirectory, fileName);
             
             
