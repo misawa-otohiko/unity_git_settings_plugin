@@ -64,6 +64,7 @@ namespace GitSettings.Editor
             var existsGit = ExistsGit();
             
             EditorGUILayout.LabelField("このプロジェクトのGit: ", existsGit ? "有効！" : "未作成...");
+            DrawGitCreateGUI();
             EditorGUILayout.Space();
             EditorGUILayout.Space();
             
@@ -83,6 +84,42 @@ namespace GitSettings.Editor
             var existsGit = Directory.Exists(projectDir + "/" + ".git");
 
             return existsGit;
+        }
+
+        /// <summary>
+        /// commandプロンプトを呼ぶ
+        /// </summary>
+        /// <param name="cmd"></param>
+        /// <param name="isHide"></param>
+        private static void CallCMD(string cmd, bool isHide = true)
+        {
+            using (var process = new System.Diagnostics.Process())
+            {
+                var startInfo = new System.Diagnostics.ProcessStartInfo();
+//            if (isHide)
+//            {
+//                startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+//            }
+                startInfo.FileName = "cmd.exe";
+                startInfo.Arguments = (isHide ? "/c" : "/k") + " " +  cmd;
+                process.StartInfo = startInfo;
+                process.Start();
+                process.WaitForExit();
+                process.Close();
+            }
+        }
+
+        private void DrawGitCreateGUI()
+        {
+//            var existsGit = ExistsGit();
+//            using (new EditorGUI.DisabledScope(existsGit))
+            using (new EditorGUI.DisabledScope(false))
+            {
+                if (GUILayout.Button("Git Create", GUILayout.Height(50f)))
+                {
+                    CallCMD("git help", false);
+                }
+            }
         }
 
         private void DrawEditorSettingsGUI()
